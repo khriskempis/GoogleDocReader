@@ -186,16 +186,16 @@ function formatContent(data){
 function FormatDocument(content){
   let BNobject = {};
   let text = '';
+  let isSection = false;
   let ulCounter = 0;
   let index = 0
-  content.forEach(item => {
+  content.forEach((item, i, arr) => {
     let section = item.paragraph;
     if(section){
       let textStyle = section.paragraphStyle.namedStyleType
       //format headings
       if(headerArray.includes(textStyle)){
-        // var formattedH1 = addHeaderElements(section);
-        // text += formattedH1;
+        isSection = true
         // check if it's the main header with City and State, 
         if(index < 1){
           var cityState = extractCityAndState(section);
@@ -206,8 +206,14 @@ function FormatDocument(content){
           BNobject[BNdashboardFields[index]] 
         }
         index+= 1
+      }
+      // if next element is header, end of a section. 
+      let paragraphProp = arr[i+1]
+      let nextHeader = paragraphProp.hasOwnProperty("paragraph") ? paragraphProp.paragraph.paragraphStyle.namedStyleType : ""
+      if(headerArray.includes(nextHeader)){
+        isSection = false; 
+      }  
       //format paragraph
-      } 
       if (textStyle == "NORMAL_TEXT"){
         let list = section.bullet
         // check if it's a list
@@ -223,14 +229,18 @@ function FormatDocument(content){
             if(ulCounter == 4){
               text += "</ul>"
               ulCounter = 0;
-              BNobject[BNdashboardFields[index]] = text;
               index+=1
+            }
+            if(!isSection){
+              BNobject[BNdashboardFields[index]] = text;
               text = '';
             }
           } else {
             var formattedParagraph = formatContent(section);
             if(formattedParagraph.length > 0){
               text += `<p>${formattedParagraph}</p>`;
+            }
+            if(!isSection){
               BNobject[BNdashboardFields[index]] = text;
               text = '';
             }
