@@ -2,8 +2,8 @@
 
 const fs = require("fs");
 const { google } = require("googleapis");
-const { headerArray, BNdashboardFields } = require("./data/constants")
-const { formatContent, extractCityAndState } = require("./data/format")
+const { HEADERS, BN_DASH_FIELDS } = require("./data/constants")
+const { formatContent, extractCityAndState, checkNextElement } = require("./data/format")
 const { authorize } = require("./data/googleApi")
 
 // Load client secrets from a local file.
@@ -12,7 +12,6 @@ fs.readFile("credentials.json", (err, content) => {
   // Authorize a client with credentials, then call the Google Docs API.
   authorize(JSON.parse(content), printDocmentContents);
 });
-
 
 /**
  * Prints the title of a sample doc:
@@ -37,7 +36,6 @@ function printDocmentContents(auth) {
   );
 }
 
-
 function FormatDocument(content) {
   let BNobject = {};
   let text = "";
@@ -49,29 +47,21 @@ function FormatDocument(content) {
     if (section) {
       let textStyle = section.paragraphStyle.namedStyleType;
       //format headings
-      if (headerArray.includes(textStyle)) {
+      if (HEADERS.includes(textStyle)) {
         isSection = true;
         // check if it's the main header with City and State,
         if (index < 1) {
           var cityState = extractCityAndState(section);
-          BNobject[BNdashboardFields[index]] = cityState[0];
-          BNobject[BNdashboardFields[index + 1]] = cityState[1];
+          BNobject[BN_DASH_FIELDS[index]] = cityState[0];
+          BNobject[BN_DASH_FIELDS[index + 1]] = cityState[1];
           index += 2;
         }
       }
       let nextElement = arr[i + 1];
       if (nextElement) {
-        // if next element is header, end of a section.
-        let nextHeader = nextElement.hasOwnProperty("paragraph")
-          ? nextElement.paragraph.paragraphStyle.namedStyleType
-          : "";
-        let isTable = nextElement.table;
-        if (headerArray.includes(nextHeader) || isTable) {
-          isSection = false;
-        }
+        isSection = checkNextElement(nextElement);
       } else {
         // we've reached the end so there is no next header
-        // set isSection to false to add last element to BNobject
         isSection = false;
       }
       //format paragraph
@@ -101,9 +91,9 @@ function FormatDocument(content) {
     }
     // at the end of a section, add text to BNobject with the correct field name
     if (!isSection && text.length > 0) {
-      BNobject[BNdashboardFields[index]] = text;
+      BNobject[BN_DASH_FIELDS[index]] = text;
       text = "";
-      // increment the index to grab the next value in BNdashboardFields array
+      // increment the index to grab the next value in BN_DASH_FIELDS array
       index += 1;
     }
   });

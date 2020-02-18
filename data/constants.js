@@ -1,4 +1,4 @@
-const headerArray = [
+const HEADERS = [
     "HEADING_1",
     "HEADING_2",
     "HEADING_3",
@@ -6,7 +6,7 @@ const headerArray = [
     "HEADING_5"
   ];
   
-  const BNdashboardFields = [
+  const BN_DASH_FIELDS = [
     "city",
     "state",
     "intro",
@@ -30,4 +30,4 @@ const headerArray = [
     "Enabled"
   ];
 
-  module.exports = { headerArray, BNdashboardFields }
+  module.exports = { HEADERS, BN_DASH_FIELDS }

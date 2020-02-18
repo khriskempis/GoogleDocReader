@@ -1,3 +1,5 @@
+const { HEADERS } = require("./constants")
+
 function addHeaderElements(content) {
     let textStyle = content.paragraphStyle;
     let headerType = textStyle.namedStyleType;
@@ -16,14 +18,6 @@ function addHeaderElements(content) {
     }
   }
 
-  function extractCityAndState(section) {
-    let cityStateString = section.elements[0].textRun.content;
-    let index = cityStateString.indexOf("for");
-    cityStateString = cityStateString.slice(index + 4);
-    cityStateTrimmed = trimContent(cityStateString);
-    return cityStateTrimmed.split(", ");
-  }
-  
   function trimContent(content) {
     var stringArray = content.split(" ");
     var trimmedContent = stringArray
@@ -36,6 +30,26 @@ function addHeaderElements(content) {
       })
       .join(" ");
     return trimmedContent;
+  }
+
+  function extractCityAndState(section) {
+    let cityStateString = section.elements[0].textRun.content;
+    let index = cityStateString.indexOf("for");
+    cityStateString = cityStateString.slice(index + 4);
+    cityStateTrimmed = trimContent(cityStateString);
+    return cityStateTrimmed.split(", ");
+  }
+
+  function checkNextElement(nextElement){
+    let isHeader = nextElement.hasOwnProperty("paragraph")
+      ? nextElement.paragraph.paragraphStyle.namedStyleType
+      : "";
+    let isTable = nextElement.table;
+    if (HEADERS.includes(isHeader) || isTable) {
+      return false;
+    } else {
+      return true; 
+    }
   }
   
   function formatContent(data) {
@@ -62,4 +76,4 @@ function addHeaderElements(content) {
     }
   }
 
-  module.exports = { addHeaderElements, extractCityAndState, trimContent, formatContent}
+  module.exports = { addHeaderElements, extractCityAndState, trimContent, checkNextElement, formatContent}
