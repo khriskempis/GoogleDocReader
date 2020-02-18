@@ -76,34 +76,21 @@ function getNewToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth 2.0 client.
  */
 function printDocmentContents(auth) {
-<<<<<<< HEAD
   const docs = google.docs({ version: "v1", auth });
   docs.documents.get(
     {
-      documentId: "1N1ox86Qzcu5YuJBlfMuPi3zJFEwtPU1Xp2tT1umBfc0"
+      documentId: "1lgyT2G1ftGpQ6uWd0O2Dx3kQyOL1xZ60Tk7L-gczZ20"
     },
     (err, res) => {
       if (err) return console.log("The API returned an error: " + err);
       var doc = res.data;
-      var content = JSON.stringify(doc.body, null, 4);
+      var data = doc.body.content;
+      var jsonObject = FormatDocument(data);
 
-      console.log(`The title of the document is: ${res.data.title}`);
+      // console.log(`The title of the document is: ${res.data.title}`);
+      console.log(jsonObject);
     }
   );
-=======
-  const docs = google.docs({version: 'v1', auth});
-  docs.documents.get({
-    documentId: '1N1ox86Qzcu5YuJBlfMuPi3zJFEwtPU1Xp2tT1umBfc0',
-  }, 
-  (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
-    var doc = res.data;
-    var data = doc.body.content;
-    var paragraph = FormatDocument(data)
-
-    // console.log(`The title of the document is: ${res.data.title}`);
-    console.log(paragraph)
-  });
 }
 
 const headerArray = [
@@ -112,160 +99,164 @@ const headerArray = [
   "HEADING_3",
   "HEADING_4",
   "HEADING_5"
-]
+];
 
 const BNdashboardFields = [
-  'city',
-  'state',
-  'intro',
-  'cheapestInternet',
-  'typesOfInternet',
-  'internetSpeed',
-  'fastestInternet',
-  'bundles',
-  'compareProviders',
-  'movingToCity',
-  'installationFees',
-  'howMuchData',
-  'mostConnected',
-  'internetStats',
-  'faqCheapestInternet',
-  'faqFastestInternet',
-  'faqNumberOfInternetProviders',
-  'faqNumberofResProviders',
-  'faqBundle',
-  'faqNumberOfBusProviders',
-  'Enabled',
-]
+  "city",
+  "state",
+  "intro",
+  "cheapestInternet",
+  "typesOfInternet",
+  "internetSpeed",
+  "fastestInternet",
+  "bundles",
+  "compareProviders",
+  "movingToCity",
+  "installationFees",
+  "howMuchData",
+  "mostConnected",
+  "internetStats",
+  "faqCheapestInternet",
+  "faqFastestInternet",
+  "faqNumberOfInternetProviders",
+  "faqNumberofResProviders",
+  "faqBundle",
+  "faqNumberOfBusProviders",
+  "Enabled"
+];
 
-
-function addHeaderElements(content){
-  let textStyle = content.paragraphStyle
+function addHeaderElements(content) {
+  let textStyle = content.paragraphStyle;
   let headerType = textStyle.namedStyleType;
-  let headerNumber = headerArray.indexOf(headerType) + 1
-  let headerHTMLopen = `<h${headerNumber}>`
-  let headerHTMLclose = `</h${headerNumber}>`
-  if(headerArray.includes(headerType)){
-    let headerTag = '';
-    let headerElements = content.elements
-    for(let i=0; i<headerElements.length; i++){
+  let headerNumber = headerArray.indexOf(headerType) + 1;
+  let headerHTMLopen = `<h${headerNumber}>`;
+  let headerHTMLclose = `</h${headerNumber}>`;
+  if (headerArray.includes(headerType)) {
+    let headerTag = "";
+    let headerElements = content.elements;
+    for (let i = 0; i < headerElements.length; i++) {
       headerTag += headerElements[i].textRun.content;
     }
-    return `${headerHTMLopen}${headerTag}${headerHTMLclose}`
+    return `${headerHTMLopen}${headerTag}${headerHTMLclose}`;
   } else {
-    return '' 
+    return "";
   }
 }
 
-function extractCityAndState(section){
-  let cityStateString = section.elements[0].textRun.content; 
+function extractCityAndState(section) {
+  let cityStateString = section.elements[0].textRun.content;
   let index = cityStateString.indexOf("for");
   cityStateString = cityStateString.slice(index + 4);
   cityStateTrimmed = trimContent(cityStateString);
   return cityStateTrimmed.split(", ");
 }
 
-function trimContent(content){
-  var stringArray = content.split(" ")
-    var trimmedContent = stringArray.map(word => {
-      if(word.includes("\n")){
+function trimContent(content) {
+  var stringArray = content.split(" ");
+  var trimmedContent = stringArray
+    .map(word => {
+      if (word.includes("\n")) {
         return word.slice(0, word.length - 1);
       } else {
-        return word
+        return word;
       }
-    }).join(' ')
-  return trimmedContent
+    })
+    .join(" ");
+  return trimmedContent;
 }
 
-function formatContent(data){
-  let textStyle = data.paragraphStyle
-  if(textStyle.namedStyleType == "NORMAL_TEXT"){
-    let formatedString = '';
-    let elements = data.elements
+function formatContent(data) {
+  let textStyle = data.paragraphStyle;
+  if (textStyle.namedStyleType == "NORMAL_TEXT") {
+    let formatedString = "";
+    let elements = data.elements;
     elements.forEach(item => {
       let content = item.textRun.content;
       let isBold = item.textRun.textStyle.bold;
-      if(content.includes("\n")){
-        var trimmedContent = trimContent(content)
+      if (content.includes("\n")) {
+        var trimmedContent = trimContent(content);
         content = trimmedContent;
-      } 
-      if(isBold && content.length > 0){
-        formatedString += `<strong>${content}</strong>`
+      }
+      if (isBold && content.length > 0) {
+        formatedString += `<strong>${content}</strong>`;
       } else {
         formatedString += content;
       }
-    })
-    return formatedString
+    });
+    return formatedString;
   } else {
-    return '' 
+    return "";
   }
 }
 
-function FormatDocument(content){
+function FormatDocument(content) {
   let BNobject = {};
-  let text = '';
+  let text = "";
   let isSection = false;
   let ulCounter = 0;
-  let index = 0
+  let index = 0;
   content.forEach((item, i, arr) => {
     let section = item.paragraph;
-    if(section){
-      let textStyle = section.paragraphStyle.namedStyleType
+    if (section) {
+      let textStyle = section.paragraphStyle.namedStyleType;
       //format headings
-      if(headerArray.includes(textStyle)){
-        isSection = true
-        // check if it's the main header with City and State, 
-        if(index < 1){
+      if (headerArray.includes(textStyle)) {
+        isSection = true;
+        // check if it's the main header with City and State,
+        if (index < 1) {
           var cityState = extractCityAndState(section);
           BNobject[BNdashboardFields[index]] = cityState[0];
-          BNobject[BNdashboardFields[index+1]] = cityState[1];
-          index+=1
-        } else {
-          BNobject[BNdashboardFields[index]] 
+          BNobject[BNdashboardFields[index + 1]] = cityState[1];
+          index += 2;
         }
-        index+= 1
       }
-      // if next element is header, end of a section. 
-      let paragraphProp = arr[i+1]
-      let nextHeader = paragraphProp.hasOwnProperty("paragraph") ? paragraphProp.paragraph.paragraphStyle.namedStyleType : ""
-      if(headerArray.includes(nextHeader)){
-        isSection = false; 
-      }  
+      let nextElement = arr[i + 1];
+      if (nextElement) {
+        // if next element is header, end of a section.
+        let nextHeader = nextElement.hasOwnProperty("paragraph")
+          ? nextElement.paragraph.paragraphStyle.namedStyleType
+          : "";
+        let isTable = nextElement.table;
+        if (headerArray.includes(nextHeader) || isTable) {
+          isSection = false;
+        }
+      } else {
+        // we've reached the end so there is no next header
+        // set isSection to false to add last element to BNobject
+        isSection = false;
+      }
       //format paragraph
-      if (textStyle == "NORMAL_TEXT"){
-        let list = section.bullet
+      if (textStyle == "NORMAL_TEXT") {
+        let list = section.bullet;
         // check if it's a list
-          if(list){
-            // create ul 
-            if(ulCounter == 0){
-              text += "<ul>"
-            }
-            var formatedList = formatContent(section)
-            text += `<li> ${formatedList} </li>`
-
-            ulCounter += 1; 
-            if(ulCounter == 4){
-              text += "</ul>"
-              ulCounter = 0;
-              index+=1
-            }
-            if(!isSection){
-              BNobject[BNdashboardFields[index]] = text;
-              text = '';
-            }
-          } else {
-            var formattedParagraph = formatContent(section);
-            if(formattedParagraph.length > 0){
-              text += `<p>${formattedParagraph}</p>`;
-            }
-            if(!isSection){
-              BNobject[BNdashboardFields[index]] = text;
-              text = '';
-            }
+        if (list) {
+          // create ul
+          if (ulCounter == 0) {
+            text += "<ul>";
           }
+          var formatedList = formatContent(section);
+          text += `<li> ${formatedList} </li>`;
+
+          ulCounter += 1;
+          if (ulCounter == 4) {
+            text += "</ul>";
+            ulCounter = 0;
+          }
+        } else {
+          var formattedParagraph = formatContent(section);
+          if (formattedParagraph.length > 0) {
+            text += `<p>${formattedParagraph}</p>`;
+          }
+        }
       }
     }
-  })
-    return BNobject;
->>>>>>> 67090578bf1e33c792ad2d272ea72f0880097dd6
+    // at the end of a section, add text to BNobject with the correct field name
+    if (!isSection && text.length > 0) {
+      BNobject[BNdashboardFields[index]] = text;
+      text = "";
+      // increment the index to grab the next value in BNdashboardFields array
+      index += 1;
+    }
+  });
+  return JSON.stringify(BNobject);
 }
