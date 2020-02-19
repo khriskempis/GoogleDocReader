@@ -32,6 +32,7 @@ function printDocmentContents(auth) {
 
       // console.log(`The title of the document is: ${res.data.title}`);
       console.log(jsonObject);
+      // console.log("JSON parsed");
     }
   );
 }
@@ -70,22 +71,18 @@ function FormatDocument(content) {
         // check if it's a list
         if (list) {
           // create ul
-          if (ulCounter == 0) {
-            text += "<ul>";
-          }
+          if (ulCounter == 0) { text += "<ul>";}
+
           var formatedList = formatContent(section);
           text += `<li> ${formatedList} </li>`;
-
           ulCounter += 1;
-          if (ulCounter == 4) {
-            text += "</ul>";
-            ulCounter = 0;
-          }
+
+          // list only has 4 elements in doc, may need refactor to be dynamic
+          if (ulCounter == 4) { text += "</ul>"; ulCounter = 0; }
+          
         } else {
           var formattedParagraph = formatContent(section);
-          if (formattedParagraph.length > 0) {
-            text += `<p>${formattedParagraph}</p>`;
-          }
+          if (formattedParagraph.length > 0) { text += `<p>${formattedParagraph}</p>`; }
         }
       }
     }
